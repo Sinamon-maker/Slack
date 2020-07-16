@@ -5,18 +5,20 @@ import { receiveChanels } from '../redux/reducers/chanels'
 import Itemchanel from './itemchanel'
 
 const Listofchannels = () => {
-    const chanels = useSelector((s) => s.chanels.chanels)
+  const chanels = useSelector((s) => s.chanels.chanels)
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(receiveChanels())
   }, [])
 
-  const channels = ['general', 'dgkjkdgj', 'kjdgksjg', 'gdskjgkj', 'dkjgkj']
+  const ListOfchannels = chanels.reduce((acc, rec) => {
+    return acc.concat(rec.chanelname)
+  }, [])
+
   return (
     <div>
-      {JSON.stringify(chanels)}
-      {channels.map((chanel) => {
+      {ListOfchannels.map((chanel) => {
         return (
           <div key={chanel}>
             {' '}

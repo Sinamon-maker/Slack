@@ -4,14 +4,14 @@ mongoose.set('useCreateIndex', true)
 
 const chanelSchema = new mongoose.Schema(
   {
-  chanelname: {
-    type: String,
-    required: true,
-    unique: true
+    chanelname: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    usersIds: { type: [String], default: [] },
+    data: Buffer
   },
-  usersIds: { type: [String], default: []},
-  data: Buffer
-},
   {
     timestamp: true
   }

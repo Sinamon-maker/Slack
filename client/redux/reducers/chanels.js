@@ -2,10 +2,12 @@
 const UPDATE_NAME = 'UPDATE_NAME'
 const ADD_NAME_TO_LIST = 'ADD_NAME_TO_LIST'
 const RECEIVE_CHANELS = 'RECEIVE_CHANELS'
+const SHOW_MESSAGE = 'SHOW_MESSAGE'
 
 const initialState = {
   chanelname: '',
-  chanels: ['olo']
+  chanels: [],
+  message: ''
 }
 
 export default (state = initialState, action) => {
@@ -19,7 +21,13 @@ export default (state = initialState, action) => {
     case RECEIVE_CHANELS: {
       return {
         ...state,
-        chanels: [...state.channelList, action.chanels]
+        chanels: action.chanels
+      }
+    }
+    case SHOW_MESSAGE: {
+      return {
+        ...state,
+        message: action.message
       }
     }
           default:

@@ -38,7 +38,7 @@ const Newchanel = () => {
           type="button"
           onClick={() => {
             setMode(true)
-             dispatch(addNametochaneLlist())
+            dispatch(addNametochaneLlist())
           }}
         >
           <span className="hover:bg-teal-700 focus:outline-none focus:shadow-outline">+</span>

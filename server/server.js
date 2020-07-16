@@ -18,6 +18,7 @@ import config from './config'
 import Html from '../client/html'
 import User from './model/User.model'
 import Chanel from './model/Chanel.model'
+import { connection } from 'mongoose'
 
 const Root = () => ''
 
@@ -76,13 +77,16 @@ server.post('/api/v1/itemchanel', (req, res) => {
     chanelname: req.body.chanelname
   })
   chanel.save()
+
   res.json({ status: 'ok' })
 })
 
 server.get('/api/v1/chanels', async (req, res) => {
   try {
     const chanels = await Chanel.find({}).exec()
-    console.log(chanels)
+    connections.forEach(c => {
+      c.write(JSON.stringify({ type: 'SHOW_MESSAGE', message: 'hallo'}))
+    })
     res.json({ status: 'ok', chanels })
   } catch (err) {
     console.log(err)
@@ -161,6 +165,7 @@ if (config.isSocketsEnabled) {
   const echo = sockjs.createServer()
   echo.on('connection', (conn) => {
     connections.push(conn)
+    conn.write(JSON.stringify({ type: 'SHOW_MESSAGE', message: 'hallo' }))
     conn.on('data', async () => { })
 
     conn.on('close', () => {

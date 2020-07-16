@@ -1,6 +1,8 @@
 import React from 'react'
 
 import Chanels from './chanels'
+import Message from './message'
+
 // import wave from '../assets/images/wave.jpg'
 
 const Home = () => {
@@ -24,13 +26,8 @@ const Home = () => {
               />
             </div>
           </div>
-
           <div className="px-6 py-4 flex-1 overflow-scroll-x">Messages</div>
-
-          <div className="flex m-6 rounded-lg border-2 border-grey-500 overflow-hidden">
-            <span className="text-3xl text-grey-400 px-3 border-r-2 border-grey">+</span>
-            <input type="text" className="w-full px-4" placeholder="Message to #general" />
-          </div>
+          <Message />
         </div>
       </div>
     </div>
