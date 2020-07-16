@@ -7,10 +7,21 @@ import { renderToStaticNodeStream } from 'react-dom/server'
 import React from 'react'
 
 import cookieParser from 'cookie-parser'
+import passport from 'passport'
+
+import mongooseService from './services/mongoose'
+import passportJWT from './services/passport.js'
+import jwt from 'jsonwebtoken'
+import auth from './middleware/auth'
+
 import config from './config'
 import Html from '../client/html'
+import User from './model/User.model'
+import Chanel from './model/Chanel.model'
 
 const Root = () => ''
+
+mongooseService.connect()
 
 try {
   // eslint-disable-next-line import/no-unresolved
@@ -32,6 +43,7 @@ const port = process.env.PORT || 8090
 const server = express()
 
 const middleware = [
+  passport.initialize(),
   cors(),
   express.static(path.resolve(__dirname, '../dist/assets')),
   bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }),
@@ -39,7 +51,76 @@ const middleware = [
   cookieParser()
 ]
 
+passport.use('jwt', passportJWT.jwt)
+
 middleware.forEach((it) => server.use(it))
+
+server.get('/api/v1/user-info', auth(['admin']), (req, res) => {
+  res.json({ status: '123' })
+})
+
+server.post('/api/v1/usercreate', (req, res) => {
+  console.log(req.body)
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password,
+    hashtag: `#${req.body.username}`
+  })
+  user.save()
+  res.json({ status: 'ok' })
+})
+
+server.post('/api/v1/itemchanel', (req, res) => {
+  console.log(req.body.chanelname)
+  const chanel = new Chanel({
+    chanelname: req.body.chanelname
+  })
+  chanel.save()
+  res.json({ status: 'ok' })
+})
+
+server.get('/api/v1/chanels', async (req, res) => {
+  try {
+    const chanels = await Chanel.find({}).exec()
+    console.log(chanels)
+    res.json({ status: 'ok', chanels })
+  } catch (err) {
+    console.log(err)
+    res.json({ status: 'error', err })
+  }
+})
+
+
+server.get('/api/v1/auth', async (req, res) => {
+  try {
+    const jwtUser = jwt.verify(req.cookies.token, config.secret)
+    const user = await User.findById(jwtUser.uid)
+
+    const payload = { uid: user.id }
+    const token = jwt.sign(payload, config.secret, { expiresIn: '48h' })
+    delete user.password
+    res.cookie('token', token, { maxAge: 1000 * 60 * 60 * 48 })
+    res.json({ status: 'ok', token, user })
+  } catch (err) {
+    console.log(err)
+    res.json({ status: 'error', err })
+  }
+})
+
+server.post('/api/v1/auth', async (req, res) => {
+  try {
+    const user = await User.findAndValidateUser(req.body)
+
+    const payload = { uid: user.id }
+    const token = jwt.sign(payload, config.secret, { expiresIn: '48h' })
+    delete user.password
+    res.cookie('token', token, { maxAge: 1000 * 60 * 60 * 48 })
+    res.json({ status: 'ok', token, user })
+  } catch (err) {
+    console.log(err)
+    res.json({ status: 'error', err })
+  }
+})
 
 server.use('/api/', (req, res) => {
   res.status(404)
@@ -80,7 +161,7 @@ if (config.isSocketsEnabled) {
   const echo = sockjs.createServer()
   echo.on('connection', (conn) => {
     connections.push(conn)
-    conn.on('data', async () => {})
+    conn.on('data', async () => { })
 
     conn.on('close', () => {
       connections = connections.filter((c) => c.readyState !== 3)

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Provider } from 'react-redux'
+import { Provider, useSelector } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Switch, Route, Redirect, StaticRouter } from 'react-router-dom'
 
@@ -9,14 +9,18 @@ import store, { history } from '../redux'
 
 import Home from '../components/home'
 import DummyView from '../components/dummy-view'
+import Login from '../components/login'
+import Register from '../components/registration'
+import PrivateComponent from '../components/private-route'
 import NotFound from '../components/404'
 
 import Startup from './startup'
 
 const OnlyAnonymousRoute = ({ component: Component, ...rest }) => {
+  const users = useSelector((s) => s.users)
   const func = (props) =>
-    !!rest.user && !!rest.user.name && !!rest.token ? (
-      <Redirect to={{ pathname: '/' }} />
+    !!users.user && !!users.token ? (
+      <Redirect to={{ pathname: '/private' }} />
     ) : (
       <Component {...props} />
     )
@@ -24,8 +28,9 @@ const OnlyAnonymousRoute = ({ component: Component, ...rest }) => {
 }
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
+  const users = useSelector((s) => s.users)
   const func = (props) =>
-    !!rest.user && !!rest.user.name && !!rest.token ? (
+    !!users.user && !!users.token ? (
       <Component {...props} />
     ) : (
       <Redirect
@@ -73,8 +78,10 @@ const RootComponent = (props) => {
         <Startup>
           <Switch>
             <Route exact path="/" component={() => <DummyView />} />
-            <Route exact path="/dashboard" component={() => <Home />} />
-            <PrivateRoute exact path="/hidden-route" component={() => <DummyView />} />
+            <OnlyAnonymousRoute exact path="/login" component={() => <Login />} />
+            <OnlyAnonymousRoute exact path="/registration" component={() => <Register />} />
+            <OnlyAnonymousRoute exact path="/dashboard" component={() => <PrivateComponent />} />
+            <PrivateRoute exact path="/private" component={() => <Home />} />
             <Route component={() => <NotFound />} />
           </Switch>
         </Startup>
